@@ -1,0 +1,16 @@
+FROM mcr.microsoft.com/dotnet/sdk:5.0 AS builder
+WORKDIR /source
+
+COPY . .
+RUN dotnet restore
+
+WORKDIR /source/API
+RUN dotnet publish --output /app/ --configuration Release --no-restore
+RUN rm -r /source
+
+FROM mcr.microsoft.com/dotnet/aspnet:5.0
+WORKDIR /app
+
+COPY --from=builder /app .
+
+ENTRYPOINT ["dotnet", "API.dll", "--environment=Development"]

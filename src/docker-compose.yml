@@ -1,0 +1,59 @@
+version: '3'
+ 
+services:
+  ecommerce_api:
+    container_name: ecommerce_api
+    image: ecommerce_api_image
+    restart: always
+    logging:
+      driver: none
+    build:
+      context: ./
+      dockerfile: Dockerfile-API
+    expose:
+      - "80"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+
+      # HTTPS 
+      - "traefik.http.routers.ecommerce_api_https.rule=Host(`api.ecommerce.com`)"
+      - "traefik.http.routers.ecommerce_api_https.entrypoints=websecure"
+      - "traefik.http.routers.ecommerce_api_https.tls.certresolver=myhttpchallenge"
+
+      #  HTTP
+      - "traefik.http.routers.ecommerce_api.rule=Host(`api.ecommerce.com`)"
+      - "traefik.http.routers.ecommerce_api.entrypoints=web"
+      - "traefik.http.routers.ecommerce_api.middlewares=redirect-to-https"
+    networks:
+      - default
+  ecommerce_admin_api:
+    container_name: ecommerce_admin_api
+    image: ecommerce_admin_api_image
+    restart: always
+    logging:
+      driver: none
+    build:
+      context: ./
+      dockerfile: Dockerfile-AdminAPI
+    expose:
+      - "80"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+
+      # HTTPS 
+      - "traefik.http.routers.ecommerce_admin_api_https.rule=Host(`api.admin.ecommerce.com`)"
+      - "traefik.http.routers.ecommerce_admin_api_https.entrypoints=websecure"
+      - "traefik.http.routers.ecommerce_admin_api_https.tls.certresolver=myhttpchallenge"
+
+      #  HTTP
+      - "traefik.http.routers.ecommerce_admin_api.rule=Host(`api.admin.ecommerce.com`)"
+      - "traefik.http.routers.ecommerce_admin_api.entrypoints=web"
+      - "traefik.http.routers.ecommerce_admin_api.middlewares=redirect-to-https"
+    networks:
+      - default
+networks:
+  default:
+    external:
+      name: proxy
